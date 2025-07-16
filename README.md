@@ -16,7 +16,7 @@ It will scrape social activities and reactions such as likes, appreciations, pra
 
 Other params (optionally):
 
-- `maxItems` - Maximum number of comments to scrape per each post. If you set to 0, it will scrape all available pages or up to 100 pages (each page 20 items) per post.
+- `maxItems` - Maximum number of comments to scrape per each profile. If you set to 0, it will scrape all available pages or up to 100 pages (each page 20 items) per profile.
 
 ### Data You'll Receive
 
