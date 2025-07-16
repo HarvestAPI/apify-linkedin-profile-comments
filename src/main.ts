@@ -16,6 +16,7 @@ await Actor.init();
 interface Input {
   profiles: string[];
   maxItems?: number;
+  postedLimit?: string;
 }
 // Structure of input is defined in input_schema.json
 const input = await Actor.getInput<Input>();
@@ -58,8 +59,10 @@ let datasetLastPushPromise: Promise<any> | undefined;
 for (const profile of input.profiles) {
   const query: {
     profile: string;
+    postedLimit?: any;
   } = {
     profile,
+    postedLimit: input.postedLimit || '',
   };
 
   await scraper.scrapeProfileComments({
