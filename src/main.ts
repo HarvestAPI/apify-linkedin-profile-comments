@@ -76,7 +76,7 @@ for (const profile of input.profiles) {
         process.exit(0);
       }
 
-      console.info(`Scraped reaction ${item?.id}`);
+      console.info(`Scraped comment ${item?.id}`);
       datasetLastPushPromise = Actor.pushData(item);
     },
     overrideConcurrency: 6,
