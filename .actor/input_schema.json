@@ -1,0 +1,20 @@
+{
+  "title": "Search LinkedIn Profiles",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "profiles": {
+      "title": "Profiles",
+      "type": "array",
+      "editor": "stringList",
+      "description": "List of LinkedIn profile URLs to scrape comments from.",
+      "prefill": ["https://www.linkedin.com/in/satyanadella"]
+    },
+    "maxItems": {
+      "title": "Maximum number of comments to scrape per each profile",
+      "type": "integer",
+      "description": "Maximum number of comments to scrape per each profile",
+      "prefill": 10
+    }
+  }
+}
