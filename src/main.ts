@@ -80,7 +80,10 @@ for (const profile of input.profiles) {
       }
 
       console.info(`Scraped comment ${item?.id}`);
-      datasetLastPushPromise = Actor.pushData(item);
+      datasetLastPushPromise = Actor.pushData({
+        ...item,
+        query,
+      });
     },
     overrideConcurrency: 6,
     overridePageConcurrency: 1,
