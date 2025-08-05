@@ -1,7 +1,8 @@
 // Apify SDK - toolkit for building Apify Actors (Read more at https://docs.apify.com/sdk/js/).
-import { createLinkedinScraper } from '@harvestapi/scraper';
+import { createLinkedinScraper, PostComment } from '@harvestapi/scraper';
 import { Actor } from 'apify';
 import { config } from 'dotenv';
+import { createConcurrentQueues } from './utils/queue.js';
 
 config();
 
@@ -54,7 +55,27 @@ if (actorMaxPaidDatasetItems && maxItems && maxItems > actorMaxPaidDatasetItems)
   maxItems = actorMaxPaidDatasetItems;
 }
 let totalItemsCounter = 0;
-let datasetLastPushPromise: Promise<any> | undefined;
+
+const pushData = createConcurrentQueues(
+  190,
+  async (item: PostComment, query: Record<string, any>) => {
+    console.info(`Scraped comment ${item?.id}`);
+    totalItemsCounter++;
+
+    if (actorMaxPaidDatasetItems && totalItemsCounter > actorMaxPaidDatasetItems) {
+      setTimeout(async () => {
+        console.warn('Max items reached, exiting...');
+        await Actor.exit();
+      }, 1000);
+      return;
+    }
+
+    await Actor.pushData({
+      ...item,
+      query,
+    });
+  },
+);
 
 for (const profile of input.profiles) {
   const query: {
@@ -71,19 +92,8 @@ for (const profile of input.profiles) {
     },
     outputType: 'callback',
     onItemScraped: async ({ item }) => {
-      totalItemsCounter++;
-
-      if (actorMaxPaidDatasetItems && totalItemsCounter > actorMaxPaidDatasetItems) {
-        console.warn('Max items reached, exiting...');
-        await Promise.all([datasetLastPushPromise, Actor.exit()]);
-        process.exit(0);
-      }
-
-      console.info(`Scraped comment ${item?.id}`);
-      datasetLastPushPromise = Actor.pushData({
-        ...item,
-        query,
-      });
+      if (!item) return;
+      await pushData(item, query);
     },
     overrideConcurrency: 6,
     overridePageConcurrency: 1,
@@ -91,8 +101,6 @@ for (const profile of input.profiles) {
     disableLog: true,
   });
 }
-
-await datasetLastPushPromise;
 
 // Gracefully exit the Actor process. It's recommended to quit all Actors with an exit().
 await Actor.exit();
