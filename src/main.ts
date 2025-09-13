@@ -3,6 +3,7 @@ import { createLinkedinScraper, PostComment } from '@harvestapi/scraper';
 import { Actor } from 'apify';
 import { config } from 'dotenv';
 import { createConcurrentQueues } from './utils/queue.js';
+import { subMonths } from 'date-fns';
 
 config();
 
@@ -77,13 +78,26 @@ const pushData = createConcurrentQueues(
   },
 );
 
+let maxDate: Date | null = null;
+if (input.postedLimit === '24h') {
+  maxDate = new Date(Date.now() - 24 * 60 * 60 * 1000);
+} else if (input.postedLimit === 'week') {
+  maxDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+} else if (input.postedLimit === 'month') {
+  maxDate = subMonths(new Date(), 1);
+} else if (input.postedLimit === '3months') {
+  maxDate = subMonths(new Date(), 3);
+} else if (input.postedLimit === '6months') {
+  maxDate = subMonths(new Date(), 6);
+} else if (input.postedLimit === 'year') {
+  maxDate = subMonths(new Date(), 12);
+}
+
 for (const profile of input.profiles) {
   const query: {
     profile: string;
-    postedLimit?: any;
   } = {
     profile,
-    postedLimit: input.postedLimit || '',
   };
 
   await scraper.scrapeProfileComments({
@@ -91,6 +105,17 @@ for (const profile of input.profiles) {
       ...query,
     },
     outputType: 'callback',
+    onPageFetched: async ({ data }) => {
+      if (data?.elements) {
+        data.elements = data.elements.filter((item) => {
+          if (maxDate && item?.createdAt) {
+            const createdAt = new Date(item.createdAt);
+            if (createdAt < maxDate) return false;
+          }
+          return true;
+        });
+      }
+    },
     onItemScraped: async ({ item }) => {
       if (!item) return;
       await pushData(item, query);
