@@ -60,7 +60,7 @@ let totalItemsCounter = 0;
 const pushData = createConcurrentQueues(
   190,
   async (item: PostComment, query: Record<string, any>) => {
-    console.info(`Scraped comment ${item?.id}`);
+    console.info(`Scraped comment ${item?.id} for profile ${query.profile}`);
     totalItemsCounter++;
 
     if (actorMaxPaidDatasetItems && totalItemsCounter > actorMaxPaidDatasetItems) {
@@ -105,7 +105,7 @@ for (const profile of input.profiles) {
       ...query,
     },
     outputType: 'callback',
-    onPageFetched: async ({ data }) => {
+    onPageFetched: async ({ data, page }) => {
       if (data?.elements) {
         data.elements = data.elements.filter((item) => {
           if (maxDate && item?.createdAt) {
@@ -114,6 +114,10 @@ for (const profile of input.profiles) {
           }
           return true;
         });
+      }
+
+      if (page === 1 && !data?.elements?.length) {
+        console.warn(`No comments found for profile: ${profile}`);
       }
     },
     onItemScraped: async ({ item }) => {
