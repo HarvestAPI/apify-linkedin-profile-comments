@@ -32,9 +32,9 @@ if (!input.profiles?.length) {
 
 const { actorId, actorRunId, actorBuildId, userId, actorMaxPaidDatasetItems, memoryMbytes } =
   Actor.getEnv();
-
-const client = Actor.newClient();
-const user = userId ? await client.user(userId).get() : null;
+const isPaying = !!process.env.APIFY_USER_IS_PAYING;
+const cm = Actor.getChargingManager();
+const pricingInfo = cm.getPricingInfo();
 
 const scraper = createLinkedinScraper({
   apiKey: process.env.HARVESTAPI_TOKEN!,
@@ -46,8 +46,10 @@ const scraper = createLinkedinScraper({
     'x-apify-actor-build-id': actorBuildId!,
     'x-apify-memory-mbytes': String(memoryMbytes),
     'x-apify-actor-max-paid-dataset-items': String(actorMaxPaidDatasetItems) || '0',
-    'x-apify-username': user?.username || '',
-    'x-apify-user-is-paying': (user as Record<string, any> | null)?.isPaying,
+    'x-apify-user-is-paying': String(isPaying),
+    'x-apify-user-is-paying-2': process.env.APIFY_USER_IS_PAYING || '',
+    'x-apify-max-total-charge-usd': String(pricingInfo.maxTotalChargeUsd),
+    'x-apify-is-pay-per-event': String(pricingInfo.isPayPerEvent),
   },
 });
 
