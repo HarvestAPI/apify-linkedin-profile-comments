@@ -51,7 +51,6 @@ Here is the example on just 1 result output of this actor:
     "likes": 120,
     "comments": 13,
     "shares": 0,
-    "impressions": 0,
     "reactions": [
       {
         "type": "LIKE",
@@ -195,7 +194,6 @@ Here is the example on just 1 result output of this actor:
         "likes": 377,
         "comments": 28,
         "shares": 42,
-        "impressions": 0,
         "reactions": [
           {
             "type": "LIKE",
@@ -224,7 +222,6 @@ Here is the example on just 1 result output of this actor:
       "likes": 1678,
       "comments": 129,
       "shares": 94,
-      "impressions": 0,
       "reactions": [
         {
           "type": "LIKE",
